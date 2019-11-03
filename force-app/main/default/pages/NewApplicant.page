@@ -1,0 +1,13 @@
+<apex:page standardController="TestApplicant__c">
+    <apex:form >
+    <apex:pageBlock title="New Applicant">
+        <apex:pageblocksection >
+    		<apex:inputField value="{!TestApplicant__c.First_Name__c}"/>
+            <apex:inputField value="{!TestApplicant__c.Last_Name__c}"/>
+        </apex:pageblocksection>
+        <apex:pageBlockButtons >
+        	<apex:commandButton action="{!save}" value="Save"/>
+        </apex:pageBlockButtons>
+    </apex:pageBlock>
+     </apex:form>
+</apex:page>
