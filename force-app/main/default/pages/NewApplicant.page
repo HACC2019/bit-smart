@@ -1,4 +1,4 @@
-<apex:page standardController="TestApplicant__c">
+<apex:page standardController="TestApplicant__c"> <!--add "standardStylesheets="false"" into this tag to turn off default SF styling-->
     <apex:form >
     <apex:pageBlock title="New Applicant">
         <apex:pageblocksection >
