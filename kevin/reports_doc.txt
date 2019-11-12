@@ -1,0 +1,124 @@
+Report I: S2-SHW
+
+INPUT
+    =============================================================================================================================
+    Name                                ERD Table           erd_fields                              (Cell) 
+    -----------------------------------------------------------------------------------------------------------------------------
+    Participant Name                    Application         first_name + middle_name + last_name    (D10)
+    Installation Street                 Application         installation_address_street             (D11)
+    Installation City, State, Zipcode   Application         installation_address_residence          (D12)
+    Current Year                        Application         year                                    (---)
+    Utility / Island                    Application         utility                                 (J12)
+    Maintenace Amount                   Application         maintenance_amt                         (J65)
+    Cost of System                      Application         total_cost                              (J62)
+    Interest Rate                       Response            interest_rate                           (J67)(D7)
+    Estimated kWh Reduction             Response            estimated_kwh_reduction                 (O29)
+    Rate Escalation [by island]         Rate Escalation     rate                                    (D15-19)
+    Annual kWh Consumption              Application         annual_kwh                              (D66)(C27)
+    Annual kWh Cost                     Application         annual_kwh_cost                         (E66)
+    Effective Rate-FNO-kWh              Effective Rate      kwh                                     (B29)
+    Effective Rate-FNO-Cost/kWh         Effective Rate      cost_kwh                                (C29)
+    Rebates
+                           
+
+
+
+
+
+
+
+
+
+
+
+CALCULATION
+=================================================================================================================================
+    Name                                        Formula                                                             (Cell)
+---------------------------------------------------------------------------------------------------------------------------------
+Summary Section
+---------------------------------------------------------------------------------------------------------------------------------
+    OBO Amount:                                 Cost of System + Maintenance Amount                                 (J66)
+    Federal Tax Credits:                        Cost of System * 0.3                                                (N31)(H1)
+    State Tax Credits:                          OBO Amount * 0.35                                                   (H2)
+    Post El kWh Consumption:                    Annual kWh Consumption - Estimated kWh Reduction                    (D10)
+    Lifetime Savings[island]                    kWh Reduction Sum                                                   (H4)
+    HO Benefit[island]                          Federal Tax Credits + State Tax Credits + Lifetime Savings[island]  (K4)
+
+---------------------------------------------------------------------------------------------------------------------------------
+Reduction Section
+---------------------------------------------------------------------------------------------------------------------------------
+    kWh Reduction (n=1..20 years):
+                                                f(1) = Estimated kWh Reduction
+                                                f(n) = f(n-1) * 0.995
+    kWh Reduction per year (n=1..20 years):
+                                                f(n) = kWh Reduction(n) /12
+    kWh Reduction Sum:                          SUM(kWh Reduction per year(i))
+    
+---------------------------------------------------------------------------------------------------------------------------------
+Consumption Section
+---------------------------------------------------------------------------------------------------------------------------------
+    Presolar Monthly kWh Consumption:           Annual kWh Consumption / 12
+    kWh Consumption Yearly(n=1..20 years):
+                                                f(n) = (Annual kWh Consumption - kWh Reduction per year(n))/12
+    
+---------------------------------------------------------------------------------------------------------------------------------
+FNO Section  
+---------------------------------------------------------------------------------------------------------------------------------
+    PreSolar Monthly FNO                        Presolar Monthly kWh Consumption <= FNO-kWh ?
+                                                Presolar Monthly kWh Consumption * FNO-Cost/kWh :
+                                                FNO-kWh * FNO-Cost/kWh
+    FNO Yearly(n=1..20 years):
+                                                f(n) = kWh Consumption Monthly(n) <= FNO-kWh ?
+                                                kWh Consumption Monthly(n)*FNO-Cost/kWh :
+                                                FNO-kWh * FNO-Cost/kWh
+    FNO Total Yearly(n=1..20 years)             First Yearly(n) + Next Yearly(n) + Over Yearly(n)
+
+---------------------------------------------------------------------------------------------------------------------------------
+Cost Without Solar Section
+---------------------------------------------------------------------------------------------------------------------------------
+    Cost Without Solar Yearly[island](n=1..20 years):
+                                                f(1) = FNO Total Yearly(1) * 12
+                                                f(n) = f(n-1) * Rate Escalation[island]
+    Cost Without Solar Sum:                     SUM(Cost Without Solar Yearly(i))
+
+---------------------------------------------------------------------------------------------------------------------------------
+Money Saver Program Charge Section
+---------------------------------------------------------------------------------------------------------------------------------
+    Money Saver Program Charge                  Monthly Program Charge * 12
+
+---------------------------------------------------------------------------------------------------------------------------------
+Energy From Grid Section
+---------------------------------------------------------------------------------------------------------------------------------
+    Energy From Grid[island]:                  f(n) = FNO Total Yearly(n)*12
+    Energy From Grid[island]:                  SUM(Energy From Grid[island](i))
+        
+
+---------------------------------------------------------------------------------------------------------------------------------
+Total Annual Payment, Post PV Section
+---------------------------------------------------------------------------------------------------------------------------------
+    Total Annual Payment, Post PV               f(n) = Money Saver Program Charge + Energy From Grid[island][n]
+    Total Annual Payment, Post PV Sum[island]:  SUM(Total Annual Payment, Post PV[island](i))
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+Annual Savings Section
+---------------------------------------------------------------------------------------------------------------------------------
+    Annual Saving[island][n]                    Cost Without Solar[island][n] - Total Annual Payment, Post PV[island][n]
+    % Billing Savings[island][n]                Annual Saving[island][n] / Cost Without Solar Yearly[island][n]
+    Monthly Post-Solar Payment[island][n]       Total Annual Payment, Post PV[island][n] / 12
+    Variance                                    % Billing Savings[island][n] - Monthly Post-Solar Payment[island][n]
+
+
+
+
+
+
+
+
+
+
+
+NOTES        =============================================================================================================================
+    Shortcut    Meaning
+    -----------------------------------------------------------------------------------------------------------------------------
+    FNO         First or Next or Over
