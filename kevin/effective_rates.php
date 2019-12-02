@@ -1,37 +1,57 @@
 <?php
+
+    function goBack($m,$y){
+        //GO BACK To INDEX.PHP
+        ob_start(); // ensures anything dumped out will be caught
+
+        // do stuff here
+        $url = 'http://codingwithkevin.com/green_loan/index.php?month='.$m.'&year='.$y; // this can be set based on whatever
+        // echo $url;
+        // clear out the output buffer
+        while (ob_get_status()) 
+        {
+            ob_end_clean();
+        }
+
+        // no redirect
+        header( "Location: $url" );
+    }
     $local = 0;
     if(!isset($_SERVER['REMOTE_ADDR'])){
-        echo "Running Local<br>";
+        // echo "Running Local<br>";
         $local = 1;
     }
+    $y = "20".(isset($_GET['year']) ? $_GET['year'] :date('y'));
+    $raw_y = $y[2].$y[3];
+    $m = sprintf("%02d", isset($_GET['month']) ? $_GET['month'] :date('m')-1);
+    $sql = 'SELECT 1 FROM effective_rate WHERE month_num = \''.$m.'\' AND year_num = '.$y.';';
     if($local == 0){
         $con=mysqli_connect("localhost","codingx7_kcheval","k-mGXrdgSi8-jm-","codingx7_green_loan");
             
         // Check connection
         if (mysqli_connect_errno())
         {
-            echo "Failed to connect to MySQL: " . mysqli_connect_error()."<br>";
+            // echo "Failed to connect to MySQL: " . mysqli_connect_error()."<br>";
+            goBack($m,$raw_y);
             exit();
         }
     }
 
-    $y = "20".(isset($_GET['year']) ? $_GET['year'] :date('y'));
-    $m = sprintf("%02d", isset($_GET['month']) ? $_GET['month'] :date('m')-1);
-    $sql = 'SELECT 1 FROM effective_rate WHERE month_num = \''.$m.'\' AND year_num = '.$y.';';
-
     if ($local == 0 && $result = mysqli_query($con, $sql)){
         if (mysqli_num_rows($result) != 0) { 
-            echo "HECO effective rates already up to date<br>";
+            // echo "HECO effective rates already up to date<br>";
+            goBack($m,$raw_y);
             exit();
         }
-        echo "Updating HECO effective rates<br>";
+        // echo "Updating HECO effective rates<br>";
     }
 
     $url_base = 'https://www.hawaiianelectric.com/documents/billing_and_payment/rates/effective_rate_summary/efs_';
     $url = $url_base.$y.'_'.$m.'.pdf';
 
     if($local == 0 && !file_put_contents('file.pdf', fopen($url, 'r'))){
-        echo "Could not find: ".$url."<br>";
+        // echo "Could not find: ".$url."<br>";
+        goBack($m,$raw_y);
         exit();
     }
 
@@ -41,6 +61,7 @@
             $x = $text[$index++];
             if(!$index || $index >= strlen($text)){
                 // echo "Read File Error.<br>";
+                goBack($m,$raw_y);
                 exit();
             }
         }
@@ -94,7 +115,7 @@
         // $a->decodePDF();
         // $text = strtolower(str_replace(',', '',str_replace(' ', '&', $a->output())));
         if(strlen($text) == 0){
-            echo "Empty file: ".$url."<br>";
+            // echo "Empty file: ".$url."<br>";
             exit();
         }
         // echo $text;
@@ -142,16 +163,17 @@
             }
         }
     }
-    // echo $sql."<br>";
+    // echo "Submit SQL";
+    echo $sql."<br>";
     if($local == 0){
         if (mysqli_multi_query($con, $sql)) {
 
         }
         if($err = mysqli_error($con)){
-            echo "Error:".$err;
+            // echo "Error:".$err;
         }
 
         mysqli_close($con);
     }
-
+    goBack($m,$raw_y);
 ?>

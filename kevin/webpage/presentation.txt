@@ -1,0 +1,9 @@
+Project Description
+    Automatically retrieve + parse external files into a database
+    Create a simple webpage to insert/display data
+    
+Presentation
+    Copy/Show slides from Presentation
+    Add specifics about this Project
+    Include URL to webpage
+    Include URL that automatically inserts data into the database
